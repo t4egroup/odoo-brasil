@@ -488,7 +488,7 @@ class EletronicDocument(models.Model):
 
         fiscal = self._compute_msg(fiscal_ids)
 
-        ncm_tax_related = 'Valor Aprox. dos Tributos R$ %s. Fonte: IBPT\n' % \
+        ncm_tax_related = 'Valor Aproximado dos Tributos %s Fonte IBPT\n' % \
                           (str(self.valor_estimado_tributos))
 
         observacao = ncm_tax_related + self._compute_msg(obs_ids)
