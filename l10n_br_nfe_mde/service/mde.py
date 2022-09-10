@@ -13,12 +13,12 @@ try:
     from pytrustnfe.nfe import recepcao_evento_manifesto
     from pytrustnfe.nfe import download_nfe
 except ImportError:
-    _logger.info('Cannot import pytrustnfe', exc_info=True)
+    _logger.info("Cannot import pytrustnfe", exc_info=True)
 
 
 def __certificado(company):
-    cert = company.with_context({'bin_size': False}).l10n_br_certificate
-    cert_pfx = base64.decodestring(cert)
+    cert = company.with_context({"bin_size": False}).l10n_br_certificate
+    cert_pfx = base64.decodebytes(cert)
     certificado = Certificado(cert_pfx, company.l10n_br_cert_password)
     return certificado
 
@@ -35,66 +35,68 @@ def distribuicao_nfe(company, ultimo_nsu):
         company_cert = company.parent_id.l10n_br_certificate
 
     certificado = __certificado(company_cert)
-    cnpj_partner = re.sub('[^0-9]', '', company.l10n_br_cnpj_cpf)
+    cnpj_partner = re.sub("[^0-9]", "", company.l10n_br_cnpj_cpf)
     result = consulta_distribuicao_nfe(
         cnpj_cpf=cnpj_partner,
         ultimo_nsu=ultimo_nsu,
         estado=company.partner_id.state_id.l10n_br_ibge_code,
         certificado=certificado,
         ambiente=1,
-        modelo='55',
+        modelo="55",
     )
 
-    retorno = result['object'].getchildren()[0]
+    retorno = result["object"].getchildren()[0]
 
     if retorno.cStat == 138:
         nfe_list = []
         for doc in retorno.loteDistDFeInt.docZip:
             orig_file_desc = gzip.GzipFile(
-                mode='r',
-                fileobj=io.BytesIO(
-                    base64.b64decode(str(doc)))
+                mode="r", fileobj=io.BytesIO(base64.b64decode(str(doc)))
             )
             orig_file_cont = orig_file_desc.read()
             orig_file_desc.close()
 
-            nfe_list.append({
-                'xml': orig_file_cont, 'schema': doc.attrib['schema'],
-                'NSU': doc.attrib['NSU']
-            })
+            nfe_list.append(
+                {
+                    "xml": orig_file_cont,
+                    "schema": doc.attrib["schema"],
+                    "NSU": doc.attrib["NSU"],
+                }
+            )
 
         return {
-            'code': retorno.cStat,
-            'message': retorno.xMotivo,
-            'list_nfe': nfe_list, 'file_returned': result['received_xml']
+            "code": retorno.cStat,
+            "message": retorno.xMotivo,
+            "list_nfe": nfe_list,
+            "file_returned": result["received_xml"],
         }
     else:
         return {
-            'code': retorno.cStat,
-            'message': retorno.xMotivo,
-            'file_sent': result['sent_xml'],
-            'file_returned': result['received_xml']
+            "code": retorno.cStat,
+            "message": retorno.xMotivo,
+            "file_sent": result["sent_xml"],
+            "file_returned": result["received_xml"],
         }
 
 
 def send_event(company, nfe_key, method, lote, justificativa=None, **kwargs):
     certificado = __certificado(company)
-    cnpj_partner = re.sub('[^0-9]', '', company.l10n_br_cnpj_cpf)
+    cnpj_partner = re.sub("[^0-9]", "", company.l10n_br_cnpj_cpf)
     result = {}
 
-    ide = "ID%s%s%s" % (kwargs['evento']['tpEvento'], nfe_key, '01')
+    ide = "ID%s%s%s" % (kwargs["evento"]["tpEvento"], nfe_key, "01")
     manifesto = {
-        'Id': ide,
-        'cOrgao': 91,
-        'tpAmb': 1,
-        'CNPJ': cnpj_partner,
-        'chNFe': nfe_key,
-        'dhEvento': datetime.now().strftime('%Y-%m-%dT%H:%M:%S-00:00'),
-        'nSeqEvento': 1,
-        'identificador': ide,
-        'tpEvento': kwargs['evento']['tpEvento'],
-        'descEvento': kwargs['evento']['descEvento'],
-        'xJust': justificativa if justificativa else '',
+        "Id": ide,
+        "cOrgao": 91,
+        "tpAmb": 1,
+        "CNPJ": cnpj_partner,
+        "chNFe": nfe_key,
+        "dhEvento": datetime.now().strftime("%Y-%m-%dT%H:%M:%S-00:00"),
+        "nSeqEvento": 1,
+        "identificador": ide,
+        "tpEvento": kwargs["evento"]["tpEvento"],
+        "descEvento": kwargs["evento"]["descEvento"],
+        "xJust": justificativa if justificativa else "",
     }
     result = recepcao_evento_manifesto(
         certificado=certificado,
@@ -102,63 +104,66 @@ def send_event(company, nfe_key, method, lote, justificativa=None, **kwargs):
         eventos=[manifesto],
         ambiente=1,
         idLote=lote,
-        estado='91',
-        modelo='55',
+        estado="91",
+        modelo="55",
     )
 
-    retorno = result['object'].getchildren()[0]
+    retorno = result["object"].getchildren()[0]
 
     if retorno.cStat == 128:
         inf_evento = retorno.retEvento[0].infEvento
         return {
-            'code': inf_evento.cStat,
-            'message': inf_evento.xMotivo,
-            'file_sent': result['sent_xml'],
-            'file_returned': result['received_xml']
+            "code": inf_evento.cStat,
+            "message": inf_evento.xMotivo,
+            "file_sent": result["sent_xml"],
+            "file_returned": result["received_xml"],
         }
     else:
         return {
-            'code': retorno.cStat,
-            'message': retorno.xMotivo,
-            'file_sent': result['sent_xml'],
-            'file_returned': result['received_xml']
+            "code": retorno.cStat,
+            "message": retorno.xMotivo,
+            "file_sent": result["sent_xml"],
+            "file_returned": result["received_xml"],
         }
 
 
 def exec_download_nfe(company, list_nfe):
     certificado = __certificado(company)
-    cnpj_partner = re.sub('[^0-9]', '', company.l10n_br_cnpj_cpf)
+    cnpj_partner = re.sub("[^0-9]", "", company.l10n_br_cnpj_cpf)
     result = download_nfe(
         estado=company.partner_id.state_id.l10n_br_ibge_code,
         certificado=certificado,
         ambiente=1,
         cnpj_cpf=cnpj_partner,
         chave_nfe=list_nfe[0],
-        modelo='55')
+        modelo="55",
+    )
 
-    retorno = result['object'].getchildren()[0]
+    retorno = result["object"].getchildren()[0]
 
-    if retorno.cStat == '139':
+    if retorno.cStat == "139":
         nfe = retorno.retNFe[0]
-        if nfe.cStat == '140':
+        if nfe.cStat == "140":
             return {
-                'code': nfe.cStat, 'message': nfe.xMotivo.valor,
-                'file_sent': result.envio.xml,
-                'file_returned': nfe.procNFe.valor.encode('utf-8'),
-                'nfe': nfe
+                "code": nfe.cStat,
+                "message": nfe.xMotivo.valor,
+                "file_sent": result.envio.xml,
+                "file_returned": nfe.procNFe.valor.encode("utf-8"),
+                "nfe": nfe,
             }
         else:
             return {
-                'code': nfe.cStat, 'message': nfe.xMotivo.valor,
-                'file_sent': result.envio.xml,
-                'file_returned': result.resposta.xml
+                "code": nfe.cStat,
+                "message": nfe.xMotivo.valor,
+                "file_sent": result.envio.xml,
+                "file_returned": result.resposta.xml,
             }
 
     else:
         return {
-            'code': retorno.cStat,
-            'message': retorno.xMotivo,
-            'file_sent': result['sent_xml'],
-            'file_returned': result['received_xml'],
-            'object': retorno,
+            "code": retorno.cStat,
+            "message": retorno.xMotivo,
+            "file_sent": result["sent_xml"],
+            "file_returned": result["received_xml"],
+            "object": retorno,
         }
