@@ -116,7 +116,7 @@ class EletronicDocument(models.Model):
             if eletr.tipo_produto == "product":
                 if not eletr.ncm:
                     errors.append("%s - NCM do produto" % prod)
-                if not eletr.icms_cst:
+                if self.cod_regime_tributario in ["1", "2"] and not eletr.icms_cst:
                     errors.append("%s - CST do ICMS" % prod)
                 if not eletr.ipi_cst:
                     errors.append("%s - CST do IPI" % prod)
