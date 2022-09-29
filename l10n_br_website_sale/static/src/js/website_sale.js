@@ -51,14 +51,11 @@ odoo.define('br_website_sale.address', function (require) {
             $("#id_country").change();
             let $state = $('#select_state_id');
             let default_state = $("#input_state_id").val();
-            console.log(default_state);
             if(default_state) {
-                console.log(default_state);
                 $state.val(default_state);
                 $state.change();
                 let $city = $('#select_city_id');
                 let default_city = $("#input_city_id").val();
-                console.log(default_city);
                 $city.val(default_city);
             }
         },
@@ -89,7 +86,7 @@ odoo.define('br_website_sale.address', function (require) {
         },
 
         onChangeCnpjCpf: function() {
-            if(this.$el.find("#radioCompany")[0].checked == 'company') {
+            if(this.$el.find("#radioCompany")[0].checked) {
                 this.cnpj_cpf_mask(true);
             } else {
                 this.cnpj_cpf_mask(false);
