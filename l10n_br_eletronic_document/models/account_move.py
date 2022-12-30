@@ -650,7 +650,7 @@ class AccountMoveLine(models.Model):
                 self.price_total * fiscal_pos.icms_aliquota_credito / 100, 2
             ),
             # - IPI -
-            "ipi_cst": "99",
+            "ipi_cst": ipi.ipi_cst or "99",
             "ipi_aliquota": ipi.amount or 0,
             "ipi_base_calculo": self.price_total if ipi.amount else 0,
             "ipi_valor": round(self.price_subtotal * ipi.amount / 100, 2),
@@ -661,14 +661,14 @@ class AccountMoveLine(models.Model):
             # 'ii_valor': self.ii_valor,
             # 'ii_valor_iof': self.ii_valor_iof,
             # - PIS -
-            "pis_cst": "49",
+            "pis_cst": pis.pis_cst or "99",
             "pis_aliquota": pis.amount or 0,
             "pis_base_calculo": self.price_total if pis.amount else 0,
             "pis_valor": round(self.price_total * pis.amount / 100, 2),
             # 'pis_valor_retencao':
             # abs(self.pis_valor) if self.pis_valor < 0 else 0,
             # - COFINS -
-            "cofins_cst": "49",
+            "cofins_cst": cofins.cofins_cst or "99",
             "cofins_aliquota": cofins.amount or 0,
             "cofins_base_calculo": self.price_total if cofins.amount else 0,
             "cofins_valor": round(self.price_total * cofins.amount / 100, 2),
