@@ -65,7 +65,7 @@ class L10nBrWebsiteSale(main.WebsiteSale):
             )
             return [(state.id, state.name) for state in states]
         return []
-    
+
     def _get_mandatory_fields_billing(self, country_id=False):
         req = ["name", "email", "street", "city_id", "country_id"]
         if country_id:
@@ -161,8 +161,8 @@ class L10nBrWebsiteSale(main.WebsiteSale):
                     ]
                 )
                 if (
-                    partner_id not in shippings.mapped("id")
-                    and partner_id != order.partner_id.id
+                        partner_id not in shippings.mapped("id")
+                        and partner_id != order.partner_id.id
                 ):
                     return Forbidden()
 
@@ -211,7 +211,6 @@ class L10nBrWebsiteSale(main.WebsiteSale):
 
 
 class BrWebsiteMyAccount(CustomerPortal):
-
     MANDATORY_BILLING_FIELDS = [
         "name",
         "phone",
@@ -232,7 +231,12 @@ class BrWebsiteMyAccount(CustomerPortal):
     def account(self, redirect=None, **post):
         if "zip" in post:
             post["zipcode"] = post.pop("zip")
-        return super(BrWebsiteMyAccount, self).account(
+        res = super(BrWebsiteMyAccount, self).account(
             redirect=redirect, **post
         )
 
+        if post and request.httprequest.method == 'POST':
+            partner = request.env.user.partner_id
+            partner.sudo()._onchange_zip()
+
+        return res
