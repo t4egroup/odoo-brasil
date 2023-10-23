@@ -17,15 +17,15 @@ except ImportError:
 class IrActionsReport(models.Model):
     _inherit = "ir.actions.report"
 
-    def _render_qweb_html(self, res_ids, data=None):
+    def _render_qweb_html(self, report_ref, docids, data=None):
         if self.report_name == "l10n_br_eletronic_document.main_template_br_nfe_danfe":
             return
 
-        return super(IrActionsReport, self)._render_qweb_html(res_ids, data=data)
+        return super(IrActionsReport, self)._render_qweb_html(report_ref, docids, data=data)
 
-    def _render_qweb_pdf(self, res_ids, data=None):
+    def _render_qweb_pdf(self, report_ref, res_ids=None, data=None):
         if self.report_name != "l10n_br_eletronic_document.main_template_br_nfe_danfe":
-            return super(IrActionsReport, self)._render_qweb_pdf(res_ids, data=data)
+            return super(IrActionsReport, self)._render_qweb_pdf(report_ref, res_ids=res_ids, data=data)
 
         nfe = self.env["eletronic.document"].search([("id", "in", res_ids)])
 

@@ -38,8 +38,8 @@
             <search string="Search Payments">
                 <filter string="Contas em atraso" domain="[('date_maturity','&lt;',time.strftime('%%Y-%%m-%%d'))]" help="Contas em atraso" name="overdue"/>
                 <separator orientation="vertical"/>
-                <filter string="A pagar" domain="[('account_id.internal_type', '=', 'payable'), ('debit', '=', 0)]" help="Registros A Pagar" name="payables"/>
-                <filter string="A receber" domain="[('account_id.internal_type', '=', 'receivable'), ('credit', '=', 0)]" help="Registros A Receber" name="receivables"/>
+                <filter string="A pagar" domain="[('account_id.account_type', '=', 'liability_payable'), ('debit', '=', 0)]" help="Registros A Pagar" name="payables"/>
+                <filter string="A receber" domain="[('account_id.account_type', '=', 'asset_receivable'), ('credit', '=', 0)]" help="Registros A Receber" name="receivables"/>
                 <separator orientation="vertical"/>
                 <filter string="Pagos" domain="[('reconciled','=', True)]" help="Registros pagos" name="paid"/>
                 <filter string="Abertos" domain="[('reconciled','=', False)]" help="Pagamentos em aberto" name="open"/>

@@ -233,13 +233,13 @@ class AccountMoveLine(models.Model):
         )
 
     @api.depends(
-        "debit", "credit", "account_id.internal_type", "amount_residual"
+        "debit", "credit", "account_id.account_type", "amount_residual"
     )
     def _compute_payment_value(self):
         for item in self:
             item.l10n_br_payment_value = (
                 item.debit
-                if item.account_id.internal_type == "receivable"
+                if item.account_id.account_type == "asset_receivable"
                 else item.credit * -1
             )
 
@@ -254,7 +254,7 @@ class AccountMoveLine(models.Model):
         dummy, act_id = self.env["ir.model.data"]._xmlid_to_res_model_res_id(
             "l10n_br_account.action_payment_account_move_line"
         )
-        receivable = self.account_id.internal_type == "receivable"
+        receivable = self.account_id.account_type == "asset_receivable"
         vals = self.env["ir.actions.act_window"].browse(act_id).read()[0]
         vals["context"] = {
             "default_amount": self.debit or self.credit,
